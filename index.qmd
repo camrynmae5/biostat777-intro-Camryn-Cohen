@@ -3,7 +3,5 @@ title: "Camryn Cohen"
 format: html
 image: "Images/Camryn.jpeg"
 ---
-
-This is a Quarto website.
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+##Welcome to my website
+Hi! My name is Camryn. I'm a graduate student in epidemiology at Johns Hopkins Bloomberg School of Public Health and contractor at the National Cancer Institute Division of Cancer Epidemiology & Genetics. I am passionate about prevention, early detection and survivorship of gynecologic and anogenital cancers.
