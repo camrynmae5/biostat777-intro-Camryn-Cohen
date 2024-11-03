@@ -1,5 +1,7 @@
 ---
-title: "biostat777_intro_camryn_cohen"
+title: "Camryn Cohen"
+format: html
+image: "Images/Camryn.jpeg"
 ---
 
 This is a Quarto website.
