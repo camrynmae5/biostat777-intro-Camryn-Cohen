@@ -1,5 +1,12 @@
 ---
-title: "About"
+title: "About Me:"
+theme: journal
 ---
 
-About this site
+I am a **second-year ScM student in cancer epidemiology** at Johns Hopkins Bloomberg School of Public Health under the mentorship of [Dr. Avonne Connor](https://publichealth.jhu.edu/faculty/3095/avonne-e-connor). 
+
+I am also a contractor at the National Cancer Institute, Division of Cancer Epidemiology & Genetics under the mentorship of [Dr. Nicolas Wentzensen](https://dceg.cancer.gov/about/staff-directory/wentzensen-nicolas) and [Dr. Megan Clarke](https://dceg.cancer.gov/news-events/news/2024/clarke-departure). 
+
+I am passionate about **prevention, early detection and survivorship of gynecologic and anogenital cancers** and am currently applying for PhD programs!
+
+Check out my research [here](https://scholar.google.com/citations?user=5_wTrzkAAAAJ&hl=en&oi=ao)!

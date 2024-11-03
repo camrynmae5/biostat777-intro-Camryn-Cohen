@@ -1,7 +1,13 @@
 ---
-title: "Camryn Cohen"
+title: "Hi! I'm Camryn Cohen"
 format: html
-image: "Images/Camryn.jpeg"
+theme: journal
 ---
-##Welcome to my website
-Hi! My name is Camryn. I'm a graduate student in epidemiology at Johns Hopkins Bloomberg School of Public Health and contractor at the National Cancer Institute Division of Cancer Epidemiology & Genetics. I am passionate about prevention, early detection and survivorship of gynecologic and anogenital cancers.
+<header style="text-align: center; padding: 20px; background-color: #f8f8f8;">
+    <img src="images/Camryn.jpeg" alt="Header image description" style="max-width: 100%; height: auto;">
+    <h1>Welcome to My Website!</h1>
+</header>
+I'm a cancer epidemiologist in training, studying gynecologic and anogenital cancers! 
+
+I'm originally from Sarasota, FL but currently live in Baltimore, MD. 
+I love powerlifting, pilates, spending time outdoors, watching reality TV and hanging out with my friends & family!
