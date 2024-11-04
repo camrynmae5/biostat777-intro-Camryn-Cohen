@@ -4,4 +4,76 @@ format: html
 theme: journal
 ---
 
-Hi.
+# Introduction
+
+In this analysis, I will explore clinical and demographic data from the TCGA-CESC project. 
+
+**My primary research question** is to investigate whether there are differences in clinical and demographic characteristics (age at diagnosis, FIGO stage at diagnosis, and race) of cervical cancer by histologic subtype.
+
+**The intended audience** for this analysis is researchers and clinicians interested in cervical cancer.
+
+# Data Source & Dictionary
+
+The data used in this analysis can be accessed from the [TCGA-CESC data portal](https://portal.gdc.cancer.gov/projects/TCGA-CESC). I will be working with clinical and demographic data from The Cancer Genome Atlas Cervical Squamouse Cell Carcinoma and Endocervical Adenocarcinoma Collection(TCGA-CESC).
+
+The data dictionary can be accessed [here](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-entity-list&anchor=clinical).
+
+# Load Required Libraries
+
+```{r, echo=TRUE, message=FALSE}
+library(TCGAbiolinks)
+library(SummarizedExperiment)
+library(dplyr)
+library(DT)
+library(ggplot2)
+
+# Perform the query
+clinical <- GDCquery_clinic(project = "TCGA-CESC", type = "clinical")
+clinical %>%
+    head %>% 
+  DT::datatable(filter = 'top', 
+          options = list(scrollX = TRUE, keys = TRUE),  
+          rownames = FALSE)
+```
+
+```{r, echo=TRUE, message=FALSE}
+### Histogram of Age at Diagnosis by Histological Subtype
+
+```{r, echo=TRUE}
+clinical <- clinical %>%
+  mutate(primary_diagnosis_recode = case_when(
+    primary_diagnosis %in% c(
+      "Squamous cell carcinoma, keratinizing, NOS",
+      "Squamous cell carcinoma, NOS",
+      "Squamous cell carcinoma, large cell, nonkeratinizing, NOS",
+      "Basaloid squamous cell carcinoma",
+      "Papillary squamous cell carcinoma"
+    ) ~ "Squamous Cell Carcinoma",
+    
+    primary_diagnosis %in% c(
+      "Adenocarcinoma, endocervical type",
+      "Adenocarcinoma, NOS", 
+      "Adenosquamous carcinoma",
+      "Mucinous adenocarcinoma, endocervical type",
+      "Endometrioid adenocarcinoma, NOS"
+    ) ~ "Adenocarcinoma",
+    
+    TRUE ~ NA_character_ 
+  ))
+```
+
+```{r, echo=TRUE, message=FALSE}
+ggplot(clinical, aes(x = primary_diagnosis_recode, y = age_at_index, fill = primary_diagnosis_recode)) +
+    geom_violin(trim = FALSE, alpha = 0.5) + 
+    geom_boxplot(width = 0.2, color = "black", outlier.shape = NA) +   
+    labs(title = "Age at Diagnosis by Histologic Subtype",
+         x = "Histologic Subtype",
+         y = "Age at Diagnosis",
+         subtitle = "Violin and Box Plot of Age at Diagnosis by Histologic Subtype for TCGA-CESC Patients",
+         caption = "Data from TCGA-CESC") +
+    scale_y_continuous(breaks = seq(0, 100, by = 10)) +
+    theme_minimal() +
+    theme(legend.position = "none")
+```
+
+
