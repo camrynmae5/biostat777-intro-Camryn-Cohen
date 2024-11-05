@@ -1,6 +1,7 @@
 ---
 title: "Example Analysis"
 format: html
+bibliography: my-bib.bib
 theme: journal
 ---
 
@@ -8,7 +9,7 @@ theme: journal
 
 In this analysis, I will explore clinical and demographic data from the TCGA-CESC project. 
 
-**My primary research question** is to investigate whether there are differences in clinical and demographic characteristics (age at diagnosis, FIGO stage at diagnosis, and race) of cervical cancer by histologic subtype.
+**My primary research question** is to investigate whether there are differences in clinical and demographic characteristics of cervical cancer by histologic subtype.
 
 **The intended audience** for this analysis is researchers and clinicians interested in cervical cancer.
 
@@ -18,28 +19,19 @@ The data used in this analysis can be accessed from the [TCGA-CESC data portal](
 
 The data dictionary can be accessed [here](https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-entity-list&anchor=clinical).
 
-# Load Required Libraries
+# Load Required Libraries & TCGA Data
 
 ```{r, echo=TRUE, message=FALSE}
 library(TCGAbiolinks)
 library(SummarizedExperiment)
 library(dplyr)
-library(DT)
 library(ggplot2)
 
-# Perform the query
 clinical <- GDCquery_clinic(project = "TCGA-CESC", type = "clinical")
-clinical %>%
-    head %>% 
-  DT::datatable(filter = 'top', 
-          options = list(scrollX = TRUE, keys = TRUE),  
-          rownames = FALSE)
 ```
 
+# Data Cleaning
 ```{r, echo=TRUE, message=FALSE}
-### Histogram of Age at Diagnosis by Histological Subtype
-
-```{r, echo=TRUE}
 clinical <- clinical %>%
   mutate(primary_diagnosis_recode = case_when(
     primary_diagnosis %in% c(
@@ -62,6 +54,12 @@ clinical <- clinical %>%
   ))
 ```
 
+::: {.callout-warning}
+Due to small case counts, cases of adenosquamous carcinoma have been grouped with adenocarcinoma cases.
+:::
+
+# Analysis #1 
+**Are there differences in age at diagnosis by histologic subtype?**
 ```{r, echo=TRUE, message=FALSE}
 ggplot(clinical, aes(x = primary_diagnosis_recode, y = age_at_index, fill = primary_diagnosis_recode)) +
     geom_violin(trim = FALSE, alpha = 0.5) + 
@@ -76,4 +74,67 @@ ggplot(clinical, aes(x = primary_diagnosis_recode, y = age_at_index, fill = prim
     theme(legend.position = "none")
 ```
 
+# Analysis #2
+**Are there differences in FIGO stage at diagnosis by histologic subtype?**
+```{r, echo=TRUE, message=FALSE}
+clinical <- clinical %>%
+    mutate(figo_stage_recode = case_when(
+        figo_stage %in% c("Stage IA", "Stage IA1", "Stage IA2", "Stage IB", "Stage IB1", "Stage IB2") ~ "Stage I",
+        figo_stage %in% c("Stage IIA", "Stage IIA1", "Stage IIA2", "Stage IIB", "Stage II") ~ "Stage II",
+        figo_stage %in% c("Stage III", "Stage IIIA", "Stage IIIB") ~ "Stage III",
+        figo_stage %in% c("Stage IVA", "Stage IVB") ~ "Stage IV",
+        TRUE ~ NA_character_ 
+    ))
+
+clinical <- clinical %>%
+    mutate(figo_stage_recode = factor(figo_stage_recode, levels = c("Stage I", "Stage II", "Stage III", "Stage IV")))
+```
+
+```{r, echo=TRUE, message=FALSE}
+red_palette <- c("Stage I" = "#ffcccc",   # Light red for Stage I
+                 "Stage II" = "#ff9999",  # Medium light red for Stage II
+                 "Stage III" = "#ff6666", # Medium red for Stage III
+                 "Stage IV" = "#ff3333")  # Dark red for Stage IV
+
+ggplot(clinical, aes(x = primary_diagnosis_recode, fill = figo_stage_recode)) +
+    geom_bar(position = "fill") + 
+    labs(title = "FIGO Stage Distribution by Histologic Subtype",
+         x = "Histologic Subtype",
+         y = "Proportion",
+         fill = "FIGO Stage",
+         subtitle = "Distribution of FIGO Stage by Histologic Subtype",
+         caption = "Data from TCGA-CESC") +
+    scale_fill_manual(values = red_palette) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(hjust = 0.5, face="bold")
+    )
+```
+
+# Analysis #3
+**Are there differences across FIGO stages in terms of age at diagnosis by histologic subtype?
+```{r, echo=TRUE, message=FALSE}
+ggplot(clinical %>% 
+           filter(!is.na(age_at_index), !is.na(figo_stage_recode)), 
+       aes(x = figo_stage_recode, y = age_at_index, fill = primary_diagnosis_recode)) +
+    geom_boxplot(alpha = 0.5, outlier.shape = NA) +  
+    labs(title = "Age at Diagnosis by FIGO Stage and Histologic Subtype",
+         x = "FIGO Stage",
+         y = "Age at Diagnosis",
+         fill = "Histologic Subtype",
+         subtitle = "Box Plots of Age at Diagnosis for Each FIGO Stage and Subtype",
+         caption = "Data from TCGA-CESC") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 1, face = "bold"))
+```
+
+# A look at the literature
+**How does stage at diagnosis and histologic subtype impact survival, stratified by race and ethnicity?**
+
+**Five year relative survival stratified by race, stage at diagnosis and histologic subtype**
+<header style="padding: 20px;">
+    <img src="images/Survival.jpeg" alt="Header image description" style="max-width: 100%; height: auto;">
+
+::: {.callout-note}
+This figure was retreived from my paper on **Racial and ethnic disparities in cervical cancer incidence, surival and mortality** from the NCI SEER program @cohen2023racial
+:::
 
