@@ -7,7 +7,11 @@ theme: journal
 
 # Introduction
 
-In this analysis, I will explore clinical and demographic data from the TCGA-CESC project. 
+In this analysis, I will explore clinical and demographic data from the The Cancer Genome Atlas Cervical Squamous Cell Carcinoma and Endocervical Adenocarcinoma (TCGA-CESC) project. @cancer2017integrated
+
+::: {.column-margin}
+![Fun facts about TCGA!](images/TCGA.jpeg)
+:::
 
 **My primary research question** is to investigate whether there are differences in clinical and demographic characteristics of cervical cancer by histologic subtype.
 
@@ -26,6 +30,7 @@ library(TCGAbiolinks)
 library(SummarizedExperiment)
 library(dplyr)
 library(ggplot2)
+library(knitr)
 
 clinical <- GDCquery_clinic(project = "TCGA-CESC", type = "clinical")
 ```
@@ -54,6 +59,27 @@ clinical <- clinical %>%
   ))
 ```
 
+```{r, echo=TRUE, message=FALSE}
+clinical <- clinical %>%
+    mutate(figo_stage_recode = case_when(
+        figo_stage %in% c("Stage IA", "Stage IA1", "Stage IA2", "Stage IB", "Stage IB1", "Stage IB2") ~ "Stage I",
+        figo_stage %in% c("Stage IIA", "Stage IIA1", "Stage IIA2", "Stage IIB", "Stage II") ~ "Stage II",
+        figo_stage %in% c("Stage III", "Stage IIIA", "Stage IIIB") ~ "Stage III",
+        figo_stage %in% c("Stage IVA", "Stage IVB") ~ "Stage IV",
+        TRUE ~ NA_character_ 
+    ))
+
+clinical <- clinical %>%
+    mutate(figo_stage_recode = factor(figo_stage_recode, levels = c("Stage I", "Stage II", "Stage III", "Stage IV")))
+```
+
+```{r, echo = TRUE, message = FALSE}
+clinical <- clinical %>%
+  select(primary_diagnosis, primary_diagnosis_recode, figo_stage, figo_stage_recode, race, age_at_index, vital_status)
+
+  glimpse(clinical)
+```
+
 ::: {.callout-warning}
 Due to small case counts, cases of adenosquamous carcinoma have been grouped with adenocarcinoma cases.
 :::
@@ -74,21 +100,17 @@ ggplot(clinical, aes(x = primary_diagnosis_recode, y = age_at_index, fill = prim
     theme(legend.position = "none")
 ```
 
+```{r, echo = TRUE, message = FALSE}
+mean_age_by_subtype <- clinical %>%
+  group_by(primary_diagnosis_recode) %>%
+  summarize(mean_age = mean(age_at_index, na.rm = TRUE))
+
+# Display the summarized data
+print(mean_age_by_subtype)
+```
+
 # Analysis #2
 **Are there differences in FIGO stage at diagnosis by histologic subtype?**
-```{r, echo=TRUE, message=FALSE}
-clinical <- clinical %>%
-    mutate(figo_stage_recode = case_when(
-        figo_stage %in% c("Stage IA", "Stage IA1", "Stage IA2", "Stage IB", "Stage IB1", "Stage IB2") ~ "Stage I",
-        figo_stage %in% c("Stage IIA", "Stage IIA1", "Stage IIA2", "Stage IIB", "Stage II") ~ "Stage II",
-        figo_stage %in% c("Stage III", "Stage IIIA", "Stage IIIB") ~ "Stage III",
-        figo_stage %in% c("Stage IVA", "Stage IVB") ~ "Stage IV",
-        TRUE ~ NA_character_ 
-    ))
-
-clinical <- clinical %>%
-    mutate(figo_stage_recode = factor(figo_stage_recode, levels = c("Stage I", "Stage II", "Stage III", "Stage IV")))
-```
 
 ```{r, echo=TRUE, message=FALSE}
 red_palette <- c("Stage I" = "#ffcccc",   # Light red for Stage I
@@ -124,7 +146,8 @@ ggplot(clinical %>%
          subtitle = "Box Plots of Age at Diagnosis for Each FIGO Stage and Subtype",
          caption = "Data from TCGA-CESC") +
     theme_minimal() +
-    theme(axis.text.x = element_text(angle = 0, hjust = 1, face = "bold"))
+    theme(axis.text.x = element_text(angle = 0, hjust = 1, face = "bold")) +
+    facet_wrap(~ primary_diagnosis_recode)
 ```
 
 # A look at the literature
@@ -137,4 +160,25 @@ ggplot(clinical %>%
 ::: {.callout-note}
 This figure was retreived from my paper on **Racial and ethnic disparities in cervical cancer incidence, surival and mortality** from the NCI SEER program @cohen2023racial
 :::
+
+# Summary of Analysis 
+
+In this analysis using data from the TCGA-CESC data portal, I was able to explore clinical and demographic characteristics of cervical cancer by histologic subtype. First, I discovered that individuals with squamous cell carcinoma are diagnosed at slightly older ages than individuals with adenocarcinoma. When I looked at the disrtribution of FIGO stage at diagnosis, it appears that individuals with adenocarcinoma are diagnosed at earlier stages than individuals with squamous cell carcinoma. When looking by both age and stage at diagnosis, I observed that individuals with advanced stage squamous cell carcinoma are diagnosed at older ages than individuals with advanced stage adenocarcinoma. There does not appear to be a difference in age and subtype at earlier stages of diagnosis. Prior literature has shown important differences by both race and histology in terms of age, stage at diagnosis and survival; however, the cohort in TCGA was not diverse enough to stratify by race. (@kucera2024survival,@cohen2023racial)
+
+# Thanks TA for grading the assignment!
+
+**At least five different functions from dplyr and tidyr:**
+1. mutate()
+2. case_when()
+3. select()
+4. glimpse()
+5. group_by()
+6. summarize()
+
+**Three different geom_() functions from ggplot2:**
+1. geom_violin
+2. geom_boxplot
+3. geom_bar
+
+
 
